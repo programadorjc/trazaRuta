@@ -1,0 +1,103 @@
+<!-- El tiempo en dedicación es la base del exito JCZ-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<script type="text/javascript" src="http://gmaps.alexfranco.mx/scripts/jquery.min.js"></script>
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+</head>
+<body>
+	Ejemplo: Geolocalización y trazar una ruta en  google maps<br>
+<input type="text" value="" id="MIPOCISION" />
+<div id="results" style="width:auto; height: 500px;">
+<div id="mapa_ruta" style="width: 70%; height: 100%; float: left;"></div>
+<div id="especificaciones"style="width: 30%; height: 100%; overflow: auto; float: right;"></div>
+
+<script type='text/javascript'>
+			var map = null;
+			var directionsDisplay = null;
+			var directionsService = null;
+			function generalMapa() {
+				if (navigator.geolocation) {
+					navigator.geolocation.getCurrentPosition(trazaRuta,
+							error);
+				} else {
+					alert('Tu navegador no soporta geolocalizacion');
+				}
+
+				function trazaRuta(pos){
+					var latitud = pos.coords.latitude;
+					var longitud = pos.coords.longitude;
+					var precision = pos.coords.accuracy;
+
+					var miPosicion = "" + latitud + "," + longitud + "";
+                                        $("#MIPOCISION").val(miPosicion);
+				var myLatlng = new google.maps.LatLng(latitud, longitud);
+				var contenedor = document.getElementById("mapa_ruta");
+				var myOptions = {
+					zoom : 10,
+					center : myLatlng,
+					mapTypeId : google.maps.MapTypeId.ROADMAP
+				};
+				var map = new google.maps.Map(contenedor, myOptions);
+				directionsDisplay = new google.maps.DirectionsRenderer();
+				directionsService = new google.maps.DirectionsService();
+				var request = {
+					origin : $("#MIPOCISION").val(),
+					destination : "19.2706072,-99.53371470000002",
+                                        travelMode : google.maps.DirectionsTravelMode["DRIVING"],
+					unitSystem : google.maps.DirectionsUnitSystem["METRIC"],
+					provideRouteAlternatives : true
+				};
+                                var infowindow = new google.maps.InfoWindow({
+                                map: map,
+                                position: new google.maps.LatLng(latitud, longitud),
+                                content: '<strong><span style="color:#047A9A;">Tu estas aqui</span></strong>',
+                                padding:0
+                                });
+
+//trazar ruta con especificaciones
+				directionsService
+						.route(
+								request,
+								function(response, status) {
+									if (status == google.maps.DirectionsStatus.OK) {
+										directionsDisplay.setMap(map);
+										directionsDisplay.setPanel($(
+												"#especificaciones").get(0));
+										directionsDisplay
+												.setDirections(response);
+									} else {
+										alert("No hay ruta disponible");
+									}
+								});
+			}
+}//FIN trazaRuta
+
+                function error(errorCode) {
+					if (errorCode.code == 1)
+						alert("No has permitido buscar tu localizacion")
+					else if (errorCode.code == 2)
+						alert("Posicion no disponible")
+					else
+						alert("Ha ocurrido un error, intenta mas tarde")
+				}
+
+			function cachaUrl(name) {
+				var regexS = "[\\?&]" + name + "=([^&#]*)";
+				var regex = new RegExp(regexS);
+				var tmpURL = window.location.href;
+				var results = regex.exec(tmpURL);
+				if (results == null)
+					return "";
+				else
+					return results[1];
+			}
+			$(document).ready(function() {
+				//var a = cachaUrl('algo');
+				generalMapa();
+				trazaRuta();
+			});
+</script>
+</body>
+</html>
